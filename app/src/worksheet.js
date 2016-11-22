@@ -237,7 +237,10 @@ const NewCells = (parent) => {
   that.appendCell = (cell_type) => {
     const insertDOM = (el) => { parent.append(el) }
     const cell = ( cell_type === 'code' ?
-      NewEvaluationCell(insertDOM, move) : NewTextCell(insertDOM, move) )
+		   NewEvaluationCell(insertDOM, move) :
+		   cell_type === 'url' ?
+		   NewURLCell(insertDOM, move) :
+		   NewTextCell(insertDOM, move) )
     cell.on('focus', () => { updateFocus(cell) })
     cells.push(cell)
     return cell
@@ -248,7 +251,8 @@ const NewCells = (parent) => {
       const insertDOM = (el) => { cells.at(focus).dom().before(el) }
       const cell = ( cell_type === 'code' ?
 		     NewEvaluationCell(insertDOM, move) :
-		     cell_type === 'url' ? NewURLCell(insertDOM, move) :
+		     cell_type === 'url' ?
+		     NewURLCell(insertDOM, move) :
 		     NewTextCell(insertDOM, move) )
       cell.on('focus', () => { updateFocus(cell) })
 
@@ -368,10 +372,8 @@ const NewURLCell = (insertDOM, move) => {
   const cm = CodeMirror( (el) => { $(el).appendTo(div) } )
   cm.setOption('indentUnit', 4)
   cm.setOption('extraKeys', { Tab: betterTab })
-  // const out = $("<div class='out' id='" + supply.newId() + "'></div>")
-  // out.appendTo(div)
-  const webview = $("<webview src='https://rawgit.com/ggreif/omega/wiki/Letrec.svg'/>")
-  webview.appendTo(div)
+  const out = $("<div class='out' id='" + supply.newId() + "'></div>")
+  out.appendTo(div)
 
   that.dom    = () => { return div }    // return associated DOM element
   that.remove = () => { div.detach() }
@@ -382,8 +384,12 @@ const NewURLCell = (insertDOM, move) => {
 
   that.evaluate  = ()  => {
     // evaluate the cell
-    div.addClass('loading')
-    div.removeClass('loading')
+    div.addClass('evaluating')
+    out.empty()
+    out.show()
+    const webview = $("<webview src='" + cm.getDoc().getValue() + "'/>")
+    webview.appendTo(out)
+    div.removeClass('evaluating')
   }
 
   // signal that the document has been edited
