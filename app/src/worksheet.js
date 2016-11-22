@@ -116,6 +116,10 @@ ipc.on('window-ready', (event, path) => {
     cells.insertBeforeCurrent('text')
     window.setDocumentEdited(true)
   })
+  ipc.on('cell-insert-url', (event) => {
+    cells.insertBeforeCurrent('url')
+    window.setDocumentEdited(true)
+  })
   ipc.on('cell-delete', (event) => {
     cells.removeCurrent()
     window.setDocumentEdited(true)
@@ -243,7 +247,9 @@ const NewCells = (parent) => {
     if (focus >= 0) {
       const insertDOM = (el) => { cells.at(focus).dom().before(el) }
       const cell = ( cell_type === 'code' ?
-        NewEvaluationCell(insertDOM, move) : NewTextCell(insertDOM, move) )
+		     NewEvaluationCell(insertDOM, move) :
+		     cell_type === 'url' ? NewURLCell(insertDOM, move) :
+		     NewTextCell(insertDOM, move) )
       cell.on('focus', () => { updateFocus(cell) })
 
       cells.at(focus).focus(false)
@@ -339,6 +345,74 @@ const NewTextCell = (insertDOM, move) => {
       if (atBottom) {
         if (move(that, 1, 0)) {
           quill.setSelection(null)  // remove any selection
+          event.preventDefault()
+        }
+      }
+    }})
+
+  return that
+}
+
+
+
+/* *************************************************************
+    URL cell
+************************************************************* */
+const NewURLCell = (insertDOM, move) => {
+  let that = {}
+  that.cell_type = 'url'
+
+  // create DOM elements and URL editor
+  const div = $("<div class='cell eval'></div>")
+  insertDOM(div)
+  const cm = CodeMirror( (el) => { $(el).appendTo(div) } )
+  cm.setOption('indentUnit', 4)
+  cm.setOption('extraKeys', { Tab: betterTab })
+  // const out = $("<div class='out' id='" + supply.newId() + "'></div>")
+  // out.appendTo(div)
+  const webview = $("<webview src='https://rawgit.com/ggreif/omega/wiki/Letrec.svg'/>")
+  webview.appendTo(div)
+
+  that.dom    = () => { return div }    // return associated DOM element
+  that.remove = () => { div.detach() }
+
+  that.setValue  = (s) => { cm.getDoc().setValue(s) }
+  that.getValue  = ()  => { return cm.getDoc().getValue() }
+  that.lineCount = ()  => { return cm.getDoc().lineCount() }
+
+  that.evaluate  = ()  => {
+    // evaluate the cell
+    div.addClass('loading')
+    div.removeClass('loading')
+  }
+
+  // signal that the document has been edited
+  cm.on('changes', () => { window.setDocumentEdited(true) })
+
+  // Focus and cursor management
+  that.on = (event, fun) => {
+    if (event === 'focus') { cm.on('focus', fun) }
+  }
+  that.setCursor = (x)    => { cm.getDoc().setCursor(x) }
+  that.focus     = (bool) => {
+    div.toggleClass('focus', bool)
+    if (bool) { cm.focus() }
+  }
+
+  cm.on('keydown', (instance, event) => {
+    // moving the cursor "out" of the cell will seamlessly move to the next cell
+    let doc = cm.getDoc()
+    let ch  = doc.getCursor().ch
+    if (event.keyCode === 38 && !event.shiftKey) { // if(up key) {
+      if (doc.getCursor().line <= 0) {
+        doc.setCursor(0,0)    // remove any selection
+        move(that, -1, ch)
+        event.preventDefault()
+      }
+    } else if (event.keyCode === 40 && !event.shiftKey) { // if(down key) {
+      if (doc.getCursor().line + 1 >= doc.lineCount()) {
+        if (move(that, 1, ch)) {
+          doc.setCursor(0,0)  // remove any selection
           event.preventDefault()
         }
       }
