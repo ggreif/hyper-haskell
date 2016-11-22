@@ -387,7 +387,7 @@ const NewURLCell = (insertDOM, move) => {
     div.addClass('evaluating')
     out.empty()
     out.show()
-    const webview = $("<webview src='" + cm.getDoc().getValue() + "'/>")
+    const webview = $("<webview src='" + that.getValue() + "'/>")
     webview.appendTo(out)
     div.removeClass('evaluating')
   }
