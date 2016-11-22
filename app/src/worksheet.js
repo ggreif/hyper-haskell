@@ -367,7 +367,7 @@ const NewURLCell = (insertDOM, move) => {
   that.cell_type = 'url'
 
   // create DOM elements and URL editor
-  const div = $("<div class='cell eval'></div>")
+  const div = $("<div class='cell url'></div>")
   insertDOM(div)
   const cm = CodeMirror( (el) => { $(el).appendTo(div) } )
   cm.setOption('indentUnit', 4)
