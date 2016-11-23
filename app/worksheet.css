@@ -68,6 +68,8 @@ pre, div.CodeMirror {
 .cell.focus            { border-left-color: black; }
 .cell.evaluating       { border-left-color: #f9f; }
 .cell.evaluating.focus { border-left-color: #c0c; }
+.cell.loading          { border-left-color: #9ff; }
+.cell.loading.focus    { border-left-color: #0cc; }
 .cell .error {
   color:red;
 }

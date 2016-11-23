@@ -384,12 +384,12 @@ const NewURLCell = (insertDOM, move) => {
 
   that.evaluate  = ()  => {
     // evaluate the cell
-    div.addClass('evaluating')
+    div.addClass('loading')
     out.empty()
     out.show()
     const webview = $("<webview src='" + that.getValue() + "'/>")
     webview.appendTo(out)
-    div.removeClass('evaluating')
+    div.removeClass('loading')
   }
 
   // signal that the document has been edited
