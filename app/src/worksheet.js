@@ -372,7 +372,7 @@ const NewURLCell = (insertDOM, move) => {
   const cm = CodeMirror( (el) => { $(el).appendTo(div) } )
   cm.setOption('indentUnit', 4)
   cm.setOption('extraKeys', { Tab: betterTab })
-  const out = $("<div class='out' id='" + supply.newId() + "'></div>")
+  const out = $("<div class='out' resize='both' style='width: 300px; resize: both; border: 2px solid; padding: 20px;' id='" + supply.newId() + "'></div>") // style='min-height: auto;' 
   out.hide()
   out.appendTo(div)
 
@@ -384,13 +384,19 @@ const NewURLCell = (insertDOM, move) => {
   that.lineCount = ()  => { return cm.getDoc().lineCount() }
 
   that.evaluate  = ()  => {
-    // evaluate the cell
+    // obtain the URL
     div.addClass('loading')
     out.empty()
-    out.show()
-    const webview = $("<webview src='" + that.getValue() + "'/>")
+    
+    const webview = $("<webview src='" + that.getValue() + "'/>") // style='min-height: 50em;' autosize='on' 
     webview.appendTo(out)
-    webview.on('did-stop-loading', () => { div.removeClass('loading') })
+      out.show()
+      /*webview.addEventListener('dom-ready', () => {
+	  webview.openDevTools()
+      })*/
+    webview.on('did-stop-loading', () => {
+	div.removeClass('loading')
+    })
   }
 
   // signal that the document has been edited
