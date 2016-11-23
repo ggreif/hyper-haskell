@@ -373,6 +373,7 @@ const NewURLCell = (insertDOM, move) => {
   cm.setOption('indentUnit', 4)
   cm.setOption('extraKeys', { Tab: betterTab })
   const out = $("<div class='out' id='" + supply.newId() + "'></div>")
+  out.hide()
   out.appendTo(div)
 
   that.dom    = () => { return div }    // return associated DOM element
@@ -389,7 +390,7 @@ const NewURLCell = (insertDOM, move) => {
     out.show()
     const webview = $("<webview src='" + that.getValue() + "'/>")
     webview.appendTo(out)
-    div.removeClass('loading')
+    webview.on('did-stop-loading', () => { div.removeClass('loading') })
   }
 
   // signal that the document has been edited
