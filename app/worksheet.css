@@ -64,8 +64,7 @@ pre, div.CodeMirror {
   padding: 1ex 1ex 1ex;
 }
 .cell.url .out {
-  /*height: 50vh;
-  resize: horizontal;*/
+  width: 300px; border: 2px solid; padding: 20px;
   resize: both;
   overflow: auto;
 }

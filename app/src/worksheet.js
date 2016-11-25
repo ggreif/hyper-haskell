@@ -372,7 +372,7 @@ const NewURLCell = (insertDOM, move) => {
   const cm = CodeMirror( (el) => { $(el).appendTo(div) } )
   cm.setOption('indentUnit', 4)
   cm.setOption('extraKeys', { Tab: betterTab })
-  const out = $("<div class='out' resize='both' style='width: 300px; resize: both; border: 2px solid; padding: 20px;' id='" + supply.newId() + "'></div>") // style='min-height: auto;' 
+  const out = $("<div class='out' id='" + supply.newId() + "'></div>")
   out.hide()
   out.appendTo(div)
 
@@ -388,15 +388,22 @@ const NewURLCell = (insertDOM, move) => {
     div.addClass('loading')
     out.empty()
     
-    const webview = $("<webview src='" + that.getValue() + "'/>") // style='min-height: 50em;' autosize='on' 
+    const webview = $("<webview src='" + that.getValue() + "' autosize/>")
     webview.appendTo(out)
-      out.show()
-      /*webview.addEventListener('dom-ready', () => {
-	  webview.openDevTools()
-      })*/
     webview.on('did-stop-loading', () => {
 	div.removeClass('loading')
     })
+    webview.on('did-fail-load', (event) => {
+      /*if (event.errorCode === OK_ERROR_CODE) {
+          alert("'did-fail-load' called with successful ERROR_CODE")
+	  } else {*/ out.empty() /*}*/
+	div.addClass('error')
+	div.removeClass('loading')
+    })
+    out.show()
+      /*webview.addEventListener('dom-ready', () => {
+	  webview.openDevTools()
+      })*/
   }
 
   // signal that the document has been edited
