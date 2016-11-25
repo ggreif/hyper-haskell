@@ -394,13 +394,16 @@ const NewURLCell = (insertDOM, move) => {
       div.removeClass('loading')
     })
     webview.on('did-fail-load', (event) => {
-      if (event.errorCode === OK_ERROR_CODE) {
-        alert("'did-fail-load' called with successful ERROR_CODE")
-      } else {
-	  alert(JSON.stringify(event))
+      if (event.errorCode === 0) {
+        console.log("'did-fail-load' called with successful ERROR_CODE")
+        out.append($("<pre>").text(JSON.stringify(event)))
+      }
+      else
+      {
         out.empty()
         div.addClass('error')
         div.removeClass('loading')
+        out.append($("<pre>").text(JSON.stringify(event)))
       }
     })
     out.show()
