@@ -64,8 +64,8 @@ pre, div.CodeMirror {
   padding: 1ex 1ex 1ex;
 }
 .cell.url .out {
-  width: 300px; border: 2px solid; padding: 20px;
-  resize: both;
+  /*width: 300px; border: 2px solid; padding: 20px;*/
+  resize: vertical;
   overflow: auto;
 }
 /* Color coding for focus and evaluation */

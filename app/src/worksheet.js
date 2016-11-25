@@ -391,14 +391,17 @@ const NewURLCell = (insertDOM, move) => {
     const webview = $("<webview src='" + that.getValue() + "' autosize/>")
     webview.appendTo(out)
     webview.on('did-stop-loading', () => {
-	div.removeClass('loading')
+      div.removeClass('loading')
     })
     webview.on('did-fail-load', (event) => {
-      /*if (event.errorCode === OK_ERROR_CODE) {
-          alert("'did-fail-load' called with successful ERROR_CODE")
-	  } else {*/ out.empty() /*}*/
-	div.addClass('error')
-	div.removeClass('loading')
+      if (event.errorCode === OK_ERROR_CODE) {
+        alert("'did-fail-load' called with successful ERROR_CODE")
+      } else {
+	  alert(JSON.stringify(event))
+        out.empty()
+        div.addClass('error')
+        div.removeClass('loading')
+      }
     })
     out.show()
       /*webview.addEventListener('dom-ready', () => {
