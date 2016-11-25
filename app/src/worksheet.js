@@ -369,9 +369,10 @@ const NewURLCell = (insertDOM, move) => {
   // create DOM elements and URL editor
   const div = $("<div class='cell url'></div>")
   insertDOM(div)
-  const cm = CodeMirror( (el) => { $(el).appendTo(div) } )
-  cm.setOption('indentUnit', 4)
-  cm.setOption('extraKeys', { Tab: betterTab })
+  const div2  = $("<div></div>")
+  div2.appendTo(div)
+  const quill = new Quill(div2.get(0))
+
   const out = $("<div class='out' id='" + supply.newId() + "'></div>")
   out.hide()
   out.appendTo(div)
@@ -379,9 +380,9 @@ const NewURLCell = (insertDOM, move) => {
   that.dom    = () => { return div }    // return associated DOM element
   that.remove = () => { div.detach() }
 
-  that.setValue  = (s) => { cm.getDoc().setValue(s) }
-  that.getValue  = ()  => { return cm.getDoc().getValue() }
-  that.lineCount = ()  => { return cm.getDoc().lineCount() }
+  that.setValue  = (s) => { quill.setText(s) }
+  that.getValue  = ()  => { return quill.getText() }
+  that.lineCount = ()  => { return 1 }
 
   that.evaluate  = ()  => {
     // obtain the URL
@@ -407,38 +408,41 @@ const NewURLCell = (insertDOM, move) => {
       }
     })
     out.show()
-      /*webview.addEventListener('dom-ready', () => {
-	  webview.openDevTools()
-      })*/
   }
 
   // signal that the document has been edited
-  cm.on('changes', () => { window.setDocumentEdited(true) })
+  quill.on('text-change', () => { window.setDocumentEdited(true) })
 
   // Focus and cursor management
   that.on = (event, fun) => {
-    if (event === 'focus') { cm.on('focus', fun) }
+    if (event === 'focus') {
+      quill.on('selection-change', (range) => { if (range) { fun() } })
+    }}
+  that.setCursor = (cursor) => {
+    if (cursor.line === 0) { quill.setSelection(0,0) }
+    if (cursor.line >   0) { quill.setSelection(quill.getLength()-1,0) }
   }
-  that.setCursor = (x)    => { cm.getDoc().setCursor(x) }
-  that.focus     = (bool) => {
+  that.focus = (bool) => {
+    // focus or unfocus the cell
     div.toggleClass('focus', bool)
-    if (bool) { cm.focus() }
+    if (bool) { quill.getSelection(true) } // looks funny, but this focuses the editor
   }
 
-  cm.on('keydown', (instance, event) => {
+  div.on('keydown', (event) => {
     // moving the cursor "out" of the cell will seamlessly move to the next cell
-    let doc = cm.getDoc()
-    let ch  = doc.getCursor().ch
-    if (event.keyCode === 38 && !event.shiftKey) { // if(up key) {
-      if (doc.getCursor().line <= 0) {
-        doc.setCursor(0,0)    // remove any selection
-        move(that, -1, ch)
+    if (event.keyCode === 38 && !event.shiftKey) { // if (up key) {
+      // hack to find out whether the cursor is at the top of the editor
+      const atTop = (quill.getBounds(0).top === quill.getBounds(quill.getSelection()).top)
+      if (atTop) {
+        quill.setSelection(0)   // remove any selection
+        move(that, -1, 0)
         event.preventDefault()
       }
-    } else if (event.keyCode === 40 && !event.shiftKey) { // if(down key) {
-      if (doc.getCursor().line + 1 >= doc.lineCount()) {
-        if (move(that, 1, ch)) {
-          doc.setCursor(0,0)  // remove any selection
+    } else if (event.keyCode === 40 && !event.shiftKey) { // if (down key) {
+      const atBottom = (quill.getBounds(quill.getLength()).top === quill.getBounds(quill.getSelection()).top)
+      if (atBottom) {
+        if (move(that, 1, 0)) {
+          quill.setSelection(null)  // remove any selection
           event.preventDefault()
         }
       }
